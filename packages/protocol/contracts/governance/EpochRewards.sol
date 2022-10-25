@@ -242,8 +242,8 @@ contract EpochRewards is
   }
 
   /**
-   * @notice Sets the target per-epoch payment in Celo Dollars for validators.
-   * @param value The value in Celo Dollars.
+   * @notice Sets the target per-epoch payment in Gold for validators.
+   * @param value The value in Gold.
    * @return True upon success.
    */
   function setTargetValidatorEpochPayment(uint256 value) public onlyOwner returns (bool) {
@@ -399,16 +399,11 @@ contract EpochRewards is
   }
 
   /**
-   * @notice Returns the total target epoch payments to validators, converted to Gold.
-   * @return The total target epoch payments to validators, converted to Gold.
+   * @notice Returns the total target epoch payments to validators in Gold.
+   * @return The total target epoch payments to validators in Gold.
    */
   function getTargetTotalEpochPaymentsInGold() public view returns (uint256) {
-    address stableTokenAddress = registry.getAddressForOrDie(STABLE_TOKEN_REGISTRY_ID);
-    (uint256 numerator, uint256 denominator) = getSortedOracles().medianRate(stableTokenAddress);
-    return
-      numberValidatorsInCurrentSet().mul(targetValidatorEpochPayment).mul(denominator).div(
-        numerator
-      );
+    return targetValidatorEpochPayment;
   }
 
   /**

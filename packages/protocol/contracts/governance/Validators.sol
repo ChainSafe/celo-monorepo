@@ -521,11 +521,12 @@ contract Validators is
       (address beneficiary, uint256 fraction) = getAccounts().getPaymentDelegation(account);
       uint256 delegatedPayment = remainingPayment.multiply(FixidityLib.wrap(fraction)).fromFixed();
       uint256 validatorPayment = remainingPayment.fromFixed().sub(delegatedPayment);
-      IStableToken stableToken = getStableToken();
-      require(stableToken.mint(group, groupPayment), "mint failed to validator group");
-      require(stableToken.mint(account, validatorPayment), "mint failed to validator account");
+
+      GoldToken goldToken = GoldToken(registry.getAddressForOrDie(GOLD_TOKEN_REGISTRY_ID));
+      require(goldToken.mint(group, groupPayment), "mint failed to validator group");
+      require(goldToken.mint(account, validatorPayment), "mint failed to validator account");
       if (fraction != 0) {
-        require(stableToken.mint(beneficiary, delegatedPayment), "mint failed to delegatee");
+        require(goldToken.mint(beneficiary, delegatedPayment), "mint failed to delegatee");
       }
       emit ValidatorEpochPaymentDistributed(account, validatorPayment, group, groupPayment);
       return totalPayment.fromFixed();
