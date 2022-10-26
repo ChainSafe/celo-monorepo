@@ -23,8 +23,8 @@ import {
   MockElectionInstance,
   MockLockedGoldContract,
   MockLockedGoldInstance,
-  MockStableTokenContract,
-  MockStableTokenInstance,
+  MockGoldTokenContract,
+  MockGoldTokenInstance,
   RegistryContract,
   RegistryInstance,
   ValidatorsTestContract,
@@ -35,7 +35,7 @@ const Accounts: AccountsContract = artifacts.require('Accounts')
 const Validators: ValidatorsTestContract = artifacts.require('ValidatorsTest')
 const MockElection: MockElectionContract = artifacts.require('MockElection')
 const MockLockedGold: MockLockedGoldContract = artifacts.require('MockLockedGold')
-const MockStableToken: MockStableTokenContract = artifacts.require('MockStableToken')
+const MockGoldToken: MockGoldTokenContract = artifacts.require('MockGoldToken')
 const Registry: RegistryContract = artifacts.require('Registry')
 
 // @ts-ignore
@@ -2206,11 +2206,12 @@ contract('Validators', (accounts: string[]) => {
     const delegatedFraction = toFixed(0.1)
 
     const maxPayment = new BigNumber(20122394876)
-    let mockStableToken: MockStableTokenInstance
+    let mockGoldToken: MockGoldTokenInstance
     beforeEach(async () => {
       await registerValidatorGroupWithMembers(group, [validator])
-      mockStableToken = await MockStableToken.new()
-      await registry.setAddressFor(CeloContractName.StableToken, mockStableToken.address)
+      mockGoldToken = await MockGoldToken.new()
+      await registry.setAddressFor(CeloContractName.GoldToken, mockGoldToken.address)
+
       // Fast-forward to the next epoch, so that the getMembershipInLastEpoch(validator) == group
       await mineToNextEpoch(web3)
       await mockLockedGold.addSlasher(accounts[2])
@@ -2253,15 +2254,15 @@ contract('Validators', (accounts: string[]) => {
         })
 
         it('should pay the validator', async () => {
-          assertEqualBN(await mockStableToken.balanceOf(validator), expectedValidatorPayment)
+          assertEqualBN(await mockGoldToken.balanceOf(validator), expectedValidatorPayment)
         })
 
         it('should pay the group', async () => {
-          assertEqualBN(await mockStableToken.balanceOf(group), expectedGroupPayment)
+          assertEqualBN(await mockGoldToken.balanceOf(group), expectedGroupPayment)
         })
 
         it('should pay the delegatee', async () => {
-          assertEqualBN(await mockStableToken.balanceOf(delegatee), expectedDelegatedPayment)
+          assertEqualBN(await mockGoldToken.balanceOf(delegatee), expectedDelegatedPayment)
         })
 
         it('should return the expected total payment', async () => {
@@ -2281,11 +2282,11 @@ contract('Validators', (accounts: string[]) => {
         })
 
         it('should pay the validator', async () => {
-          assertEqualBN(await mockStableToken.balanceOf(validator), expectedValidatorPayment)
+          assertEqualBN(await mockGoldToken.balanceOf(validator), expectedValidatorPayment)
         })
 
         it('should pay the group', async () => {
-          assertEqualBN(await mockStableToken.balanceOf(group), expectedGroupPayment)
+          assertEqualBN(await mockGoldToken.balanceOf(group), expectedGroupPayment)
         })
 
         it('should return the expected total payment', async () => {
@@ -2319,15 +2320,15 @@ contract('Validators', (accounts: string[]) => {
         })
 
         it('should pay the validator only half', async () => {
-          assertEqualBN(await mockStableToken.balanceOf(validator), halfExpectedValidatorPayment)
+          assertEqualBN(await mockGoldToken.balanceOf(validator), halfExpectedValidatorPayment)
         })
 
         it('should pay the group only half', async () => {
-          assertEqualBN(await mockStableToken.balanceOf(group), halfExpectedGroupPayment)
+          assertEqualBN(await mockGoldToken.balanceOf(group), halfExpectedGroupPayment)
         })
 
         it('should pay the delegatee only half', async () => {
-          assertEqualBN(await mockStableToken.balanceOf(delegatee), halfExpectedDelegatedPayment)
+          assertEqualBN(await mockGoldToken.balanceOf(delegatee), halfExpectedDelegatedPayment)
         })
 
         it('should return the expected total payment', async () => {
@@ -2346,15 +2347,15 @@ contract('Validators', (accounts: string[]) => {
         })
 
         it('should not pay the validator', async () => {
-          assertEqualBN(await mockStableToken.balanceOf(validator), 0)
+          assertEqualBN(await mockGoldToken.balanceOf(validator), 0)
         })
 
         it('should not pay the group', async () => {
-          assertEqualBN(await mockStableToken.balanceOf(group), 0)
+          assertEqualBN(await mockGoldToken.balanceOf(group), 0)
         })
 
         it('should not pay the delegatee', async () => {
-          assertEqualBN(await mockStableToken.balanceOf(delegatee), 0)
+          assertEqualBN(await mockGoldToken.balanceOf(delegatee), 0)
         })
 
         it('should return zero', async () => {
@@ -2373,15 +2374,15 @@ contract('Validators', (accounts: string[]) => {
         })
 
         it('should not pay the validator', async () => {
-          assertEqualBN(await mockStableToken.balanceOf(validator), 0)
+          assertEqualBN(await mockGoldToken.balanceOf(validator), 0)
         })
 
         it('should not pay the group', async () => {
-          assertEqualBN(await mockStableToken.balanceOf(group), 0)
+          assertEqualBN(await mockGoldToken.balanceOf(group), 0)
         })
 
         it('should not pay the delegatee', async () => {
-          assertEqualBN(await mockStableToken.balanceOf(delegatee), 0)
+          assertEqualBN(await mockGoldToken.balanceOf(delegatee), 0)
         })
 
         it('should return zero', async () => {

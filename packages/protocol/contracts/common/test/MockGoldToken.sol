@@ -1,10 +1,14 @@
 pragma solidity ^0.5.13;
 // solhint-disable no-unused-vars
 
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+
 /**
  * @title A mock GoldToken for testing.
  */
 contract MockGoldToken {
+  using SafeMath for uint256;
+
   uint8 public constant decimals = 18;
   uint256 public totalSupply;
   mapping(address => uint256) balances;
@@ -36,6 +40,13 @@ contract MockGoldToken {
 
   function balanceOf(address a) external view returns (uint256) {
     return balances[a];
+  }
+
+  function mint(address to, uint256 value) external returns (bool) {
+    require(to != address(0), "0 is a reserved address");
+    balances[to] = balances[to].add(value);
+    totalSupply = totalSupply.add(value);
+    return true;
   }
 
 }

@@ -21,8 +21,8 @@ import {
   MockGoldTokenInstance,
   MockSortedOraclesContract,
   MockSortedOraclesInstance,
-  MockStableTokenContract,
-  MockStableTokenInstance,
+  // MockStableTokenContract,
+  // MockStableTokenInstance,
   RegistryContract,
   RegistryInstance,
   ReserveContract,
@@ -33,7 +33,7 @@ const EpochRewards: EpochRewardsTestContract = artifacts.require('EpochRewardsTe
 const Freezer: FreezerContract = artifacts.require('Freezer')
 const MockElection: MockElectionContract = artifacts.require('MockElection')
 const MockGoldToken: MockGoldTokenContract = artifacts.require('MockGoldToken')
-const MockStableToken: MockStableTokenContract = artifacts.require('MockStableToken')
+// const MockStableToken: MockStableTokenContract = artifacts.require('MockStableToken')
 const MockSortedOracles: MockSortedOraclesContract = artifacts.require('MockSortedOracles')
 const Registry: RegistryContract = artifacts.require('Registry')
 const Reserve: ReserveContract = artifacts.require('Reserve')
@@ -58,7 +58,7 @@ contract('EpochRewards', (accounts: string[]) => {
   let freezer: FreezerInstance
   let mockElection: MockElectionInstance
   let mockGoldToken: MockGoldTokenInstance
-  let mockStableToken: MockStableTokenInstance
+  // let mockStableToken: MockStableTokenInstance
   let mockSortedOracles: MockSortedOraclesInstance
   let registry: RegistryInstance
   const nonOwner = accounts[1]
@@ -80,8 +80,8 @@ contract('EpochRewards', (accounts: string[]) => {
   const carbonOffsettingFraction = toFixed(new BigNumber(1 / 200))
   const carbonOffsettingPartner = '0x0000000000000000000000000000000000000000'
   const targetValidatorEpochPayment = new BigNumber(10000000000000)
-  const exchangeRate = 7
-  const sortedOraclesDenominator = new BigNumber('1000000000000000000000000')
+  // const exchangeRate = 7
+  // const sortedOraclesDenominator = new BigNumber('1000000000000000000000000')
   const timeTravelToDelta = async (timeDelta: BigNumber) => {
     // mine beforehand, just in case
     await jsonRpc(web3, 'evm_mine', [])
@@ -98,7 +98,7 @@ contract('EpochRewards', (accounts: string[]) => {
     epochRewards = await EpochRewards.new()
     mockElection = await MockElection.new()
     mockGoldToken = await MockGoldToken.new()
-    mockStableToken = await MockStableToken.new()
+    // mockStableToken = await MockStableToken.new()
     mockSortedOracles = await MockSortedOracles.new()
     freezer = await Freezer.new(true)
     registry = await Registry.new(true)
@@ -106,11 +106,11 @@ contract('EpochRewards', (accounts: string[]) => {
     await registry.setAddressFor(CeloContractName.Freezer, freezer.address)
     await registry.setAddressFor(CeloContractName.GoldToken, mockGoldToken.address)
     await registry.setAddressFor(CeloContractName.SortedOracles, mockSortedOracles.address)
-    await registry.setAddressFor(CeloContractName.StableToken, mockStableToken.address)
-    await mockSortedOracles.setMedianRate(
-      mockStableToken.address,
-      sortedOraclesDenominator.times(exchangeRate)
-    )
+    // await registry.setAddressFor(CeloContractName.StableToken, mockStableToken.address)
+    // await mockSortedOracles.setMedianRate(
+    //   mockStableToken.address,
+    //   sortedOraclesDenominator.times(exchangeRate)
+    // )
 
     await epochRewards.initialize(
       registry.address,
@@ -496,11 +496,8 @@ contract('EpochRewards', (accounts: string[]) => {
         await epochRewards.setNumberValidatorsInCurrentSet(numberValidators)
       })
 
-      it('should return the number of validators times the max payment divided by the exchange rate', async () => {
-        const expected = targetValidatorEpochPayment
-          .times(numberValidators)
-          .div(exchangeRate)
-          .integerValue(BigNumber.ROUND_FLOOR)
+      it('should return the number of validators times the max payment', async () => {
+        const expected = targetValidatorEpochPayment.times(numberValidators)
         assertEqualBN(await epochRewards.getTargetTotalEpochPaymentsInGold(), expected)
       })
     })
@@ -922,7 +919,7 @@ contract('EpochRewards', (accounts: string[]) => {
   })
 
   describe('#calculateTargetEpochRewards()', () => {
-    describe('when there are active votes, a stable token exchange rate is set and the actual remaining supply is 10% more than the target remaining supply after rewards', () => {
+    describe('when there are active votes and the actual remaining supply is 10% more than the target remaining supply after rewards', () => {
       const activeVotes = web3.utils.toWei('102398474')
       const timeDelta = YEAR.times(10)
       const numberValidators = 100
@@ -931,10 +928,9 @@ contract('EpochRewards', (accounts: string[]) => {
       beforeEach(async () => {
         await epochRewards.setNumberValidatorsInCurrentSet(numberValidators)
         await mockElection.setActiveVotes(activeVotes)
-        const expectedTargetTotalEpochPaymentsInGold = targetValidatorEpochPayment
-          .times(numberValidators)
-          .div(exchangeRate)
-          .integerValue(BigNumber.ROUND_FLOOR)
+        const expectedTargetTotalEpochPaymentsInGold = targetValidatorEpochPayment.times(
+          numberValidators
+        )
         const expectedTargetEpochRewards = fromFixed(targetVotingYieldParams.initial).times(
           activeVotes
         )
@@ -976,9 +972,7 @@ contract('EpochRewards', (accounts: string[]) => {
       })
 
       it('should return the correct amount for the community reward', async () => {
-        const validatorReward = targetValidatorEpochPayment
-          .times(numberValidators)
-          .div(exchangeRate)
+        const validatorReward = targetValidatorEpochPayment.times(numberValidators)
         const votingReward = fromFixed(targetVotingYieldParams.initial).times(activeVotes)
         const expected = validatorReward
           .plus(votingReward)
@@ -995,9 +989,7 @@ contract('EpochRewards', (accounts: string[]) => {
       })
 
       it('should return the correct amount for the carbon offsetting fund', async () => {
-        const validatorReward = targetValidatorEpochPayment
-          .times(numberValidators)
-          .div(exchangeRate)
+        const validatorReward = targetValidatorEpochPayment.times(numberValidators)
         const votingReward = fromFixed(targetVotingYieldParams.initial).times(activeVotes)
         const expected = validatorReward
           .plus(votingReward)
@@ -1015,148 +1007,148 @@ contract('EpochRewards', (accounts: string[]) => {
     })
   })
 
-  describe('#isReserveLow', () => {
-    // TODO: Add changing parameters in this test / don't hardcode the linear
-    // ratio change.
-    let reserve: ReserveInstance
+  // describe('#isReserveLow', () => {
+  //   // TODO: Add changing parameters in this test / don't hardcode the linear
+  //   // ratio change.
+  //   let reserve: ReserveInstance
 
-    beforeEach(async () => {
-      const totalSupply = new BigNumber(129762987346298761037469283746)
-      reserve = await Reserve.new(true)
-      await registry.setAddressFor(CeloContractName.Reserve, reserve.address)
-      await reserve.initialize(
-        registry.address,
-        60,
-        toFixed(1),
-        0,
-        0,
-        initialAssetAllocationSymbols,
-        initialAssetAllocationWeights,
-        toFixed(0.005),
-        toFixed(2)
-      )
-      await reserve.addToken(mockStableToken.address)
-      await mockGoldToken.setTotalSupply(totalSupply)
-      const assetAllocationSymbols = [
-        web3.utils.padRight(web3.utils.utf8ToHex('cGLD'), 64),
-        web3.utils.padRight(web3.utils.utf8ToHex('empty'), 64),
-      ]
-      const assetAllocationWeights = [
-        new BigNumber(10).pow(24).dividedBy(new BigNumber(2)).integerValue(),
-        new BigNumber(10).pow(24).dividedBy(new BigNumber(2)).integerValue(),
-      ]
-      await reserve.setAssetAllocations(assetAllocationSymbols, assetAllocationWeights)
-    })
+  //   beforeEach(async () => {
+  //     const totalSupply = new BigNumber(129762987346298761037469283746)
+  //     reserve = await Reserve.new(true)
+  //     await registry.setAddressFor(CeloContractName.Reserve, reserve.address)
+  //     await reserve.initialize(
+  //       registry.address,
+  //       60,
+  //       toFixed(1),
+  //       0,
+  //       0,
+  //       initialAssetAllocationSymbols,
+  //       initialAssetAllocationWeights,
+  //       toFixed(0.005),
+  //       toFixed(2)
+  //     )
+  //     await reserve.addToken(mockStableToken.address)
+  //     await mockGoldToken.setTotalSupply(totalSupply)
+  //     const assetAllocationSymbols = [
+  //       web3.utils.padRight(web3.utils.utf8ToHex('cGLD'), 64),
+  //       web3.utils.padRight(web3.utils.utf8ToHex('empty'), 64),
+  //     ]
+  //     const assetAllocationWeights = [
+  //       new BigNumber(10).pow(24).dividedBy(new BigNumber(2)).integerValue(),
+  //       new BigNumber(10).pow(24).dividedBy(new BigNumber(2)).integerValue(),
+  //     ]
+  //     await reserve.setAssetAllocations(assetAllocationSymbols, assetAllocationWeights)
+  //   })
 
-    describe('reserve ratio of 0.5', () => {
-      beforeEach(async () => {
-        const stableBalance = new BigNumber(2397846127684712867321)
-        const goldBalance = stableBalance.div(exchangeRate).div(2).times(0.5).integerValue()
-        await mockStableToken.setTotalSupply(stableBalance)
-        await web3.eth.sendTransaction({
-          from: accounts[9],
-          to: reserve.address,
-          value: goldBalance.toString(),
-        })
-      })
+  //   describe('reserve ratio of 0.5', () => {
+  //     beforeEach(async () => {
+  //       const stableBalance = new BigNumber(2397846127684712867321)
+  //       const goldBalance = stableBalance.div(exchangeRate).div(2).times(0.5).integerValue()
+  //       await mockStableToken.setTotalSupply(stableBalance)
+  //       await web3.eth.sendTransaction({
+  //         from: accounts[9],
+  //         to: reserve.address,
+  //         value: goldBalance.toString(),
+  //       })
+  //     })
 
-      it('should be low at start', async () => {
-        const timeDelta: BigNumber = YEAR.times(0)
-        await timeTravelToDelta(timeDelta)
-        const isLow = await epochRewards.isReserveLow()
-        assert.equal(isLow, true)
-      })
+  //     it('should be low at start', async () => {
+  //       const timeDelta: BigNumber = YEAR.times(0)
+  //       await timeTravelToDelta(timeDelta)
+  //       const isLow = await epochRewards.isReserveLow()
+  //       assert.equal(isLow, true)
+  //     })
 
-      it('should be low at 15 years', async () => {
-        const timeDelta: BigNumber = YEAR.times(15)
-        await timeTravelToDelta(timeDelta)
-        const isLow = await epochRewards.isReserveLow()
-        assert.equal(isLow, true)
-      })
+  //     it('should be low at 15 years', async () => {
+  //       const timeDelta: BigNumber = YEAR.times(15)
+  //       await timeTravelToDelta(timeDelta)
+  //       const isLow = await epochRewards.isReserveLow()
+  //       assert.equal(isLow, true)
+  //     })
 
-      it('should be low at 25 years', async () => {
-        const timeDelta: BigNumber = YEAR.times(25)
-        await timeTravelToDelta(timeDelta)
-        const isLow = await epochRewards.isReserveLow()
-        assert.equal(isLow, true)
-      })
-    })
+  //     it('should be low at 25 years', async () => {
+  //       const timeDelta: BigNumber = YEAR.times(25)
+  //       await timeTravelToDelta(timeDelta)
+  //       const isLow = await epochRewards.isReserveLow()
+  //       assert.equal(isLow, true)
+  //     })
+  //   })
 
-    describe('reserve ratio of 1.5', () => {
-      beforeEach(async () => {
-        const stableBalance = new BigNumber(2397846127684712867321)
-        const goldBalance = stableBalance.div(exchangeRate).div(2).times(1.5).integerValue()
-        await mockStableToken.setTotalSupply(stableBalance)
-        await web3.eth.sendTransaction({
-          from: accounts[9],
-          to: reserve.address,
-          value: goldBalance.toString(),
-        })
-      })
+  //   describe('reserve ratio of 1.5', () => {
+  //     beforeEach(async () => {
+  //       const stableBalance = new BigNumber(2397846127684712867321)
+  //       const goldBalance = stableBalance.div(exchangeRate).div(2).times(1.5).integerValue()
+  //       await mockStableToken.setTotalSupply(stableBalance)
+  //       await web3.eth.sendTransaction({
+  //         from: accounts[9],
+  //         to: reserve.address,
+  //         value: goldBalance.toString(),
+  //       })
+  //     })
 
-      it('should be low at start', async () => {
-        const timeDelta: BigNumber = YEAR.times(0)
-        await timeTravelToDelta(timeDelta)
-        const isLow = await epochRewards.isReserveLow()
-        assert.equal(isLow, true)
-      })
+  //     it('should be low at start', async () => {
+  //       const timeDelta: BigNumber = YEAR.times(0)
+  //       await timeTravelToDelta(timeDelta)
+  //       const isLow = await epochRewards.isReserveLow()
+  //       assert.equal(isLow, true)
+  //     })
 
-      it('should be low at 12 years', async () => {
-        const timeDelta: BigNumber = YEAR.times(12)
-        await timeTravelToDelta(timeDelta)
-        const isLow = await epochRewards.isReserveLow()
-        assert.equal(isLow, true)
-      })
+  //     it('should be low at 12 years', async () => {
+  //       const timeDelta: BigNumber = YEAR.times(12)
+  //       await timeTravelToDelta(timeDelta)
+  //       const isLow = await epochRewards.isReserveLow()
+  //       assert.equal(isLow, true)
+  //     })
 
-      it('should not be low at 15 years', async () => {
-        const timeDelta: BigNumber = YEAR.times(15)
-        await timeTravelToDelta(timeDelta)
-        const isLow = await epochRewards.isReserveLow()
-        assert.equal(isLow, false)
-      })
+  //     it('should not be low at 15 years', async () => {
+  //       const timeDelta: BigNumber = YEAR.times(15)
+  //       await timeTravelToDelta(timeDelta)
+  //       const isLow = await epochRewards.isReserveLow()
+  //       assert.equal(isLow, false)
+  //     })
 
-      it('should not be low at 25 years', async () => {
-        const timeDelta: BigNumber = YEAR.times(25)
-        await timeTravelToDelta(timeDelta)
-        const isLow = await epochRewards.isReserveLow()
-        assert.equal(isLow, false)
-      })
-    })
+  //     it('should not be low at 25 years', async () => {
+  //       const timeDelta: BigNumber = YEAR.times(25)
+  //       await timeTravelToDelta(timeDelta)
+  //       const isLow = await epochRewards.isReserveLow()
+  //       assert.equal(isLow, false)
+  //     })
+  //   })
 
-    describe('reserve ratio of 2.5', () => {
-      beforeEach(async () => {
-        const stableBalance = new BigNumber(2397846127684712867321)
-        const goldBalance = stableBalance.div(exchangeRate).div(2).times(2.5).integerValue()
-        await mockStableToken.setTotalSupply(stableBalance)
-        await web3.eth.sendTransaction({
-          from: accounts[9],
-          to: reserve.address,
-          value: goldBalance.toString(),
-        })
-      })
+  //   describe('reserve ratio of 2.5', () => {
+  //     beforeEach(async () => {
+  //       const stableBalance = new BigNumber(2397846127684712867321)
+  //       const goldBalance = stableBalance.div(exchangeRate).div(2).times(2.5).integerValue()
+  //       await mockStableToken.setTotalSupply(stableBalance)
+  //       await web3.eth.sendTransaction({
+  //         from: accounts[9],
+  //         to: reserve.address,
+  //         value: goldBalance.toString(),
+  //       })
+  //     })
 
-      it('should not be low at start', async () => {
-        const timeDelta: BigNumber = YEAR.times(0)
-        await timeTravelToDelta(timeDelta)
-        const isLow = await epochRewards.isReserveLow()
-        assert.equal(isLow, false)
-      })
+  //     it('should not be low at start', async () => {
+  //       const timeDelta: BigNumber = YEAR.times(0)
+  //       await timeTravelToDelta(timeDelta)
+  //       const isLow = await epochRewards.isReserveLow()
+  //       assert.equal(isLow, false)
+  //     })
 
-      it('should not be low at 15 years', async () => {
-        const timeDelta: BigNumber = YEAR.times(15)
-        await timeTravelToDelta(timeDelta)
-        const isLow = await epochRewards.isReserveLow()
-        assert.equal(isLow, false)
-      })
+  //     it('should not be low at 15 years', async () => {
+  //       const timeDelta: BigNumber = YEAR.times(15)
+  //       await timeTravelToDelta(timeDelta)
+  //       const isLow = await epochRewards.isReserveLow()
+  //       assert.equal(isLow, false)
+  //     })
 
-      it('should not be low at 25 years', async () => {
-        const timeDelta: BigNumber = YEAR.times(25)
-        await timeTravelToDelta(timeDelta)
-        const isLow = await epochRewards.isReserveLow()
-        assert.equal(isLow, false)
-      })
-    })
-  })
+  //     it('should not be low at 25 years', async () => {
+  //       const timeDelta: BigNumber = YEAR.times(25)
+  //       await timeTravelToDelta(timeDelta)
+  //       const isLow = await epochRewards.isReserveLow()
+  //       assert.equal(isLow, false)
+  //     })
+  //   })
+  // })
 
   describe('when the contract is frozen', () => {
     beforeEach(async () => {

@@ -403,7 +403,7 @@ contract EpochRewards is
    * @return The total target epoch payments to validators in Gold.
    */
   function getTargetTotalEpochPaymentsInGold() public view returns (uint256) {
-    return targetValidatorEpochPayment;
+    return numberValidatorsInCurrentSet().mul(targetValidatorEpochPayment);
   }
 
   /**

@@ -10,6 +10,7 @@ import "./interfaces/IValidators.sol";
 import "../common/CalledByVm.sol";
 import "../common/Initializable.sol";
 import "../common/FixidityLib.sol";
+import "../common/GoldToken.sol";
 import "../common/linkedlists/AddressLinkedList.sol";
 import "../common/UsingRegistry.sol";
 import "../common/UsingPrecompiles.sol";
